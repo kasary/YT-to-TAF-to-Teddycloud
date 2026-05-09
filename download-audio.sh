@@ -32,25 +32,25 @@ trim() {
 }
 
 print_error() {
-  echo "Fehler: $1" >&2
+  echo "Error: $1" >&2
 }
 
 usage() {
   cat <<EOF
-Verwendung:
+Usage:
   $(basename "$0") <youtube-url>
 
-Konfiguration ueber Umgebungsvariablen:
-  LOCAL_CONFIG_FILE      lokale Konfigurationsdatei, Standard: ./SetYourTeddycloudAddressHere.sh
-  TEDDYCLOUD_URL         z. B. http://192.168.178.180/web
-  DOWNLOAD_DIR           lokaler Arbeitsordner fuer fertige .taf-Dateien
-  KEEP_SOURCE_AUDIO      1 = .wav zusaetzlich behalten
-  TAF_BITRATE            bevorzugte Opus-Bitrate fuer opus2tonie, Standard: 64
-  TAF_CBR                1 = CBR aktivieren, Standard: 1
-  TAF_FALLBACK_MODES     Leerzeichen-getrennte Fallbacks wie 48:1 32:1
-  OPUS2TONIE_DIR         Pfad zum geklonten opus2tonie-Repo
-  PYTHON_BIN             Python aus deiner virtuellen Umgebung
-  TERMINAL_NOTIFIER_BIN  optionaler expliziter Pfad zu terminal-notifier
+Configuration via environment variables:
+  LOCAL_CONFIG_FILE      local config file, default: ./SetYourTeddycloudAddressHere.sh
+  TEDDYCLOUD_URL         for example http://192.168.178.180/web
+  DOWNLOAD_DIR           local working directory for generated .taf files
+  KEEP_SOURCE_AUDIO      1 = keep the .wav file as well
+  TAF_BITRATE            preferred Opus bitrate for opus2tonie, default: 64
+  TAF_CBR                1 = enable CBR, default: 1
+  TAF_FALLBACK_MODES     space-separated fallbacks such as 48:1 32:1
+  OPUS2TONIE_DIR         path to the cloned opus2tonie repository
+  PYTHON_BIN             Python binary from your virtual environment
+  TERMINAL_NOTIFIER_BIN  optional explicit path to terminal-notifier
 EOF
 }
 
@@ -107,7 +107,7 @@ notify_success() {
   if [ -n "$notifier" ] && [ -n "$tonies_url" ]; then
     "$notifier" \
       -title "$NOTIFICATION_TITLE" \
-      -message "${title} - fertig" \
+      -message "${title} - finished" \
       -sound default \
       -open "$tonies_url" >/dev/null 2>&1 || true
     return
@@ -120,9 +120,9 @@ notify_success() {
 
 on_error() {
   local exit_code=$?
-  local message="Download, TAF-Konvertierung oder Upload fehlgeschlagen."
+  local message="Download, TAF conversion, or upload failed."
   if [ -n "$CURRENT_STEP" ]; then
-    message="${message} Schritt: ${CURRENT_STEP}."
+    message="${message} Step: ${CURRENT_STEP}."
   fi
   print_error "$message"
   notify_error "$message"
@@ -133,7 +133,7 @@ require_command() {
   local command_name="$1"
   local hint="${2:-}"
   if ! command -v "$command_name" >/dev/null 2>&1; then
-    print_error "${command_name} wurde nicht gefunden.${hint:+ ${hint}}"
+    print_error "${command_name} was not found.${hint:+ ${hint}}"
     exit 1
   fi
 }
@@ -142,14 +142,14 @@ require_file() {
   local path="$1"
   local description="$2"
   if [ ! -e "$path" ]; then
-    print_error "${description} wurde nicht gefunden unter ${path}."
+    print_error "${description} was not found at ${path}."
     exit 1
   fi
 }
 
 teddycloud_api_base() {
   if [ -z "$TEDDYCLOUD_URL" ]; then
-    print_error "TEDDYCLOUD_URL ist nicht gesetzt."
+    print_error "TEDDYCLOUD_URL is not set."
     exit 1
   fi
 
@@ -239,7 +239,7 @@ fetch_library_dirs() {
 
   index_url="$(teddycloud_api_base)/api/fileIndexV2?path=$(url_encode "$current_path")&special=library"
   response="$(curl --fail --silent --show-error "$index_url")" || {
-    print_error "TeddyCloud-Ordner konnten nicht geladen werden: ${current_path:-/}"
+    print_error "Could not load TeddyCloud folders: ${current_path:-/}"
     return 1
   }
 
@@ -256,7 +256,7 @@ fetch_assignable_tags() {
   local response
 
   response="$(curl --fail --silent --show-error "$(teddycloud_api_base)/api/getTagIndex")" || {
-    print_error "Die TeddyCloud-Tonie-Liste konnte nicht geladen werden."
+    print_error "Could not load the TeddyCloud Tonie/tag list."
     return 1
   }
 
@@ -304,7 +304,7 @@ fetch_tag_record_by_ruid() {
   local response
 
   response="$(curl --fail --silent --show-error "$(teddycloud_api_base)/api/getTagIndex")" || {
-    print_error "Die TeddyCloud-Tonie-Liste konnte nicht geladen werden."
+    print_error "Could not load the TeddyCloud Tonie/tag list."
     return 1
   }
 
@@ -357,7 +357,7 @@ fetch_tag_source_by_ruid() {
   local response
 
   response="$(curl --fail --silent --show-error "$(teddycloud_api_base)/api/getTagIndex")" || {
-    print_error "Die TeddyCloud-Tonie-Liste konnte nicht zur Verifikation geladen werden."
+    print_error "Could not load the TeddyCloud Tonie/tag list for verification."
     return 1
   }
 
@@ -380,11 +380,11 @@ assign_uploaded_file_prompt() {
   local answer
 
   answer="$(osascript <<'EOF'
-button returned of (display dialog "Soll die hochgeladene Datei direkt einer vorhandenen Tonie/Figur zugewiesen werden?" with title "YT Audio Upload" buttons {"Nein", "Ja"} default button "Nein")
+button returned of (display dialog "Assign the uploaded file directly to an existing Tonie/tag?" with title "YT Audio Upload" buttons {"No", "Yes"} default button "No")
 EOF
 )"
 
-  [ "$(trim "$answer")" = "Ja" ]
+  [ "$(trim "$answer")" = "Yes" ]
 }
 
 choose_assignment_target() {
@@ -396,7 +396,7 @@ choose_assignment_target() {
   fetch_assignable_tags > "$tags_file"
   if [ ! -s "$tags_file" ]; then
     rm -f "$tags_file" "$choices_file"
-    print_error "Es wurden keine passenden TeddyCloud-Tags gefunden."
+    print_error "No suitable TeddyCloud Tonie/tag entries were found."
     return 1
   fi
 
@@ -422,7 +422,7 @@ with open(tags_path, "r", encoding="utf-8") as tags_file, open(choices_path, "w"
 
   if [ ! -s "$choices_file" ]; then
     rm -f "$tags_file" "$choices_file"
-    print_error "Die Tonie/Figur-Liste ist leer."
+    print_error "The Tonie/tag list is empty."
     return 1
   fi
 
@@ -432,7 +432,7 @@ set choicesPath to item 1 of argv
 set dialogTitle to item 2 of argv
 set tagChoicesText to read POSIX file choicesPath as «class utf8»
 set tagChoices to paragraphs of tagChoicesText
-set chosenTag to choose from list tagChoices with prompt "Vorhandene Tonie/Figur waehlen" with title dialogTitle
+set chosenTag to choose from list tagChoices with prompt "Choose an existing Tonie/tag" with title dialogTitle
 if chosenTag is false then
   error number -128
 end if
@@ -450,7 +450,7 @@ EOF
 
   if [ -z "$selected_index" ]; then
     rm -f "$tags_file" "$choices_file"
-    print_error "Die Tonie/Figur-Auswahl konnte nicht ausgewertet werden."
+    print_error "Could not evaluate the Tonie/tag selection."
     return 1
   fi
 
@@ -470,7 +470,7 @@ with open(tags_path, "r", encoding="utf-8") as tags_file:
   rm -f "$tags_file" "$choices_file"
 
   if [ -z "$record" ]; then
-    print_error "Zur ausgewaehlten Tonie/Figur konnte kein passender Datensatz gefunden werden: ${selected_index}"
+    print_error "Could not find a matching record for the selected Tonie/tag: ${selected_index}"
     return 1
   fi
 
@@ -492,13 +492,13 @@ on run argv
 set tagLabel to item 1 of argv
 set currentSource to item 2 of argv
 set newSource to item 3 of argv
-set dialogText to "Die ausgewaehlte Tonie/Figur hat bereits eine Quelle." & return & return & "Tonie: " & tagLabel & return & "Aktuell: " & currentSource & return & "Neu: " & newSource & return & return & "Soll die Quelle ueberschrieben werden?"
-return button returned of (display dialog dialogText with title "YT Audio Upload" buttons {"Abbrechen", "Ueberschreiben"} default button "Ueberschreiben" cancel button "Abbrechen")
+set dialogText to "The selected Tonie/tag already has a source." & return & return & "Tonie/tag: " & tagLabel & return & "Current: " & currentSource & return & "New: " & newSource & return & return & "Do you want to overwrite the source?"
+return button returned of (display dialog dialogText with title "YT Audio Upload" buttons {"Cancel", "Overwrite"} default button "Overwrite" cancel button "Cancel")
 end run
 EOF
 )"
 
-  [ "$(trim "$answer")" = "Ueberschreiben" ]
+  [ "$(trim "$answer")" = "Overwrite" ]
 }
 
 assign_tag_source() {
@@ -507,12 +507,12 @@ assign_tag_source() {
   local verified_source
 
   if [ -z "$ruid" ]; then
-    print_error "Die Tonie/Figur-Zuweisung wurde ohne gueltige RUID aufgerufen."
+    print_error "The Tonie/tag assignment was called without a valid RUID."
     return 1
   fi
 
   if [ -z "$new_source" ]; then
-    print_error "Die neue TeddyCloud-Quelle fuer die Tonie/Figur ist leer."
+    print_error "The new TeddyCloud source for the Tonie/tag is empty."
     return 1
   fi
 
@@ -520,7 +520,7 @@ assign_tag_source() {
     -X POST \
     --data-raw "source=$(url_encode "$new_source")" \
     "$(teddycloud_api_base)/content/json/set/${ruid}" >/dev/null || {
-      print_error "Die Datei konnte keiner Tonie/Figur zugewiesen werden. RUID: ${ruid}"
+      print_error "Could not assign the file to a Tonie/tag. RUID: ${ruid}"
       return 1
     }
 
@@ -528,7 +528,7 @@ assign_tag_source() {
   verified_source="$(trim "$verified_source")"
 
   if [ "$verified_source" != "$new_source" ]; then
-    print_error "Die Tonie/Figur-Zuweisung wurde von TeddyCloud nicht wie erwartet gespeichert. Erwartet: ${new_source} | Gefunden: ${verified_source:-<leer>}"
+    print_error "The Tonie/tag assignment was not stored by TeddyCloud as expected. Expected: ${new_source} | Found: ${verified_source:-<empty>}"
     return 1
   fi
 }
@@ -560,7 +560,7 @@ create_library_dir() {
     -X POST \
     --data-raw "$folder_path" \
     "$create_url" >/dev/null || {
-      print_error "Der TeddyCloud-Ordner konnte nicht erstellt werden: ${folder_path}"
+      print_error "Could not create the TeddyCloud folder: ${folder_path}"
       return 1
     }
 }
@@ -572,12 +572,12 @@ select_library_path() {
   {
     printf '/\n'
     collect_library_paths ""
-    printf '[Neuen Ordner erstellen]\n'
+    printf '[Create new folder]\n'
   } | awk '!seen[$0]++' > "$options_file"
 
   selection="$(osascript <<EOF
 set folderChoices to paragraphs of (do shell script "cat " & quoted form of "$options_file")
-set chosenFolder to choose from list folderChoices with prompt "TeddyCloud-Zielordner waehlen" with title "${NOTIFICATION_TITLE}" default items {"/"}
+set chosenFolder to choose from list folderChoices with prompt "Choose TeddyCloud target folder" with title "${NOTIFICATION_TITLE}" default items {"/"}
 if chosenFolder is false then
   error number -128
 end if
@@ -587,20 +587,20 @@ EOF
   rm -f "$options_file"
   selection="$(trim "$selection")"
 
-  if [ "$selection" != "[Neuen Ordner erstellen]" ]; then
+  if [ "$selection" != "[Create new folder]" ]; then
     printf '%s\n' "$selection"
     return
   fi
 
   new_folder_name="$(osascript <<'EOF'
-set dialogResult to display dialog "Neuen TeddyCloud-Ordner anlegen. Gib den relativen Pfad an, z. B. Bibi Blocksberg/Neue Folge" default answer "" with title "YT Audio Upload"
+set dialogResult to display dialog "Create a new TeddyCloud folder. Enter the relative path, for example Bibi Blocksberg/New Episode" default answer "" with title "YT Audio Upload"
 return text returned of dialogResult
 EOF
 )"
   new_folder_name="$(trim "$new_folder_name")"
 
   if [ -z "$new_folder_name" ]; then
-    print_error "Kein Ordnername angegeben."
+    print_error "No folder name provided."
     exit 1
   fi
 
@@ -623,7 +623,7 @@ create_taf() {
   local tried_modes=()
 
   require_file "${OPUS2TONIE_DIR}/opus2tonie.py" "opus2tonie.py"
-  require_file "$PYTHON_BIN" "Python aus der Projekt-Umgebung"
+  require_file "$PYTHON_BIN" "Python from the project virtual environment"
 
   for mode in "${bitrate}:${cbr_flag}" $TAF_FALLBACK_MODES; do
     bitrate="${mode%%:*}"
@@ -653,7 +653,7 @@ create_taf() {
   done
 
   if [ ! -f "$target_file" ]; then
-    print_error "Es wurde keine TAF-Datei erzeugt. Versucht wurden diese Modi: ${tried_modes[*]}."
+    print_error "No TAF file was created. Tried these modes: ${tried_modes[*]}."
     exit 1
   fi
 }
@@ -671,7 +671,7 @@ upload_taf() {
   curl --fail --silent --show-error \
     -F "upload=@${taf_file}" \
     "$upload_url" >/dev/null || {
-      print_error "Upload nach TeddyCloud fehlgeschlagen fuer Ordner: /${normalized_path}"
+      print_error "Upload to TeddyCloud failed for folder: /${normalized_path}"
       return 1
     }
 }
@@ -682,8 +682,8 @@ main() {
   local assign_after_upload=0
 
   require_command yt-dlp
-  require_command ffmpeg "Installiere es z. B. mit: brew install ffmpeg"
-  require_command opusenc "Installiere es z. B. mit: brew install opus-tools"
+  require_command ffmpeg "Install it for example with: brew install ffmpeg"
+  require_command opusenc "Install it for example with: brew install opus-tools"
   require_command curl
   require_command osascript
 
@@ -699,17 +699,17 @@ main() {
   fi
 
   if [ -z "$TEDDYCLOUD_URL" ]; then
-    print_error "TEDDYCLOUD_URL ist nicht gesetzt."
+    print_error "TEDDYCLOUD_URL is not set."
     exit 1
   fi
 
   detected_title="$(detect_title "$url")"
   edited_title="$(edit_title "$detected_title")"
-  CURRENT_STEP="TeddyCloud-Ordnerauswahl"
+  CURRENT_STEP="TeddyCloud folder selection"
   target_library_path="$(select_library_path)"
   library_source="$(build_library_source "$target_library_path" "${edited_title}.taf")"
 
-  CURRENT_STEP="Tonie-Auswahl"
+  CURRENT_STEP="Tonie/tag selection"
   if assign_uploaded_file_prompt; then
     if ! tag_record="$(choose_assignment_target)"; then
       exit 1
@@ -722,16 +722,16 @@ main() {
     if confirm_source_overwrite "$tag_label" "$tag_source" "$library_source"; then
       assign_after_upload=1
     else
-      print_error "Die Tonie/Figur-Zuweisung wurde vor dem Download abgebrochen."
+      print_error "The Tonie/tag assignment was cancelled before the download."
       exit 1
     fi
   fi
 
-  CURRENT_STEP="Vorbereitung"
+  CURRENT_STEP="Preparation"
   mkdir -p "$DOWNLOAD_DIR"
   WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/yt-audio.XXXXXX")"
 
-  CURRENT_STEP="YouTube-Download"
+  CURRENT_STEP="YouTube download"
   yt-dlp \
     --extract-audio \
     --audio-format wav \
@@ -740,31 +740,31 @@ main() {
 
   source_audio_file="$(find "$WORK_DIR" -maxdepth 1 -type f -name '*.wav' | head -n 1)"
   if [ -z "$source_audio_file" ]; then
-    print_error "Nach dem Download wurde keine WAV-Datei gefunden."
+    print_error "No WAV file was found after the download."
     exit 1
   fi
 
   final_taf_file="${DOWNLOAD_DIR}/${edited_title}.taf"
-  CURRENT_STEP="TAF-Konvertierung"
+  CURRENT_STEP="TAF conversion"
   create_taf "$source_audio_file" "$final_taf_file"
 
   if [ "$KEEP_SOURCE_AUDIO" = "1" ]; then
     mv "$source_audio_file" "${DOWNLOAD_DIR}/$(basename "$source_audio_file")"
   fi
 
-  CURRENT_STEP="TeddyCloud-Upload"
+  CURRENT_STEP="TeddyCloud upload"
   upload_taf "$final_taf_file" "$target_library_path"
 
-  CURRENT_STEP="Tonie-Zuweisung"
+  CURRENT_STEP="Tonie/tag assignment"
   if [ "$assign_after_upload" = "1" ]; then
     assign_tag_source "$tag_ruid" "$library_source"
-    echo "Tonie/Figur erfolgreich zugewiesen: ${tag_label}"
+    echo "Tonie/tag assigned successfully: ${tag_label}"
   fi
 
   rm -f "$final_taf_file"
 
   CURRENT_STEP=""
-  echo "TAF in TeddyCloud hochgeladen: ${TEDDYCLOUD_URL}${target_library_path}"
+  echo "TAF uploaded to TeddyCloud: ${TEDDYCLOUD_URL}${target_library_path}"
   notify_success "$edited_title"
 }
 

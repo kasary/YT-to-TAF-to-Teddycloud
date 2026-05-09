@@ -17,7 +17,7 @@ require_command() {
   local command_name="$1"
   local hint="${2:-}"
   if ! command -v "$command_name" >/dev/null 2>&1; then
-    echo "Fehler: ${command_name} wurde nicht gefunden.${hint:+ ${hint}}" >&2
+    echo "Error: ${command_name} was not found.${hint:+ ${hint}}" >&2
     exit 1
   fi
 }
@@ -27,16 +27,16 @@ brew_install_if_missing() {
   local binary_name="${2:-$1}"
 
   if command -v "$binary_name" >/dev/null 2>&1; then
-    printf 'Bereits vorhanden: %s\n' "$binary_name"
+    printf 'Already present: %s\n' "$binary_name"
     return
   fi
 
-  print_step "Installiere ${package_name}"
+  print_step "Installing ${package_name}"
   brew install "$package_name"
 }
 
 setup_python_venv() {
-  print_step "Richte Python-Umgebung ein"
+  print_step "Setting up Python environment"
 
   if [ ! -d "$VENV_DIR" ]; then
     "$PYTHON_BIN" -m venv "$VENV_DIR"
@@ -47,15 +47,15 @@ setup_python_venv() {
 }
 
 setup_opus2tonie() {
-  print_step "Richte opus2tonie ein"
+  print_step "Setting up opus2tonie"
 
   if [ -d "${OPUS2TONIE_DIR}/.git" ]; then
-    printf 'Bereits vorhanden: %s\n' "$OPUS2TONIE_DIR"
+    printf 'Already present: %s\n' "$OPUS2TONIE_DIR"
     return
   fi
 
   if [ -e "$OPUS2TONIE_DIR" ]; then
-    echo "Fehler: ${OPUS2TONIE_DIR} existiert bereits, ist aber kein Git-Checkout." >&2
+    echo "Error: ${OPUS2TONIE_DIR} already exists but is not a Git checkout." >&2
     exit 1
   fi
 
@@ -65,14 +65,14 @@ setup_opus2tonie() {
 write_local_config() {
   local entered_url
 
-  print_step "Richte TeddyCloud-Konfiguration ein"
+  print_step "Setting up TeddyCloud configuration"
 
   if [ -f "$LOCAL_CONFIG_FILE" ]; then
-    printf 'Bereits vorhanden: %s\n' "$LOCAL_CONFIG_FILE"
+    printf 'Already installed: %s\n' "$LOCAL_CONFIG_FILE"
     return
   fi
 
-  printf 'Bitte gib deine TeddyCloud-URL ein (z. B. http://192.168.178.180/web): '
+  printf 'Please enter your TeddyCloud URL (for example http://192.168.178.180/web): '
   IFS= read -r entered_url
   entered_url="${entered_url#"${entered_url%%[![:space:]]*}"}"
   entered_url="${entered_url%"${entered_url##*[![:space:]]}"}"
@@ -91,27 +91,27 @@ export TEDDYCLOUD_URL="${entered_url}"
 EOF
 
   chmod +x "$LOCAL_CONFIG_FILE"
-  printf 'Geschrieben: %s\n' "$LOCAL_CONFIG_FILE"
+  printf 'Written: %s\n' "$LOCAL_CONFIG_FILE"
 }
 
 print_next_steps() {
   cat <<EOF
 
-Setup abgeschlossen.
+Setup complete.
 
-Naechste Schritte:
-1. Falls noetig, pruefe die Datei:
+Next steps:
+1. If needed, review this file:
    ${LOCAL_CONFIG_FILE}
 
-2. Script testen:
+2. Test the script:
    ./download-audio.sh "https://youtube.com/watch?v=..."
 
 Optional:
-- Wenn du einen anderen Download-Ordner willst:
-  in ${LOCAL_CONFIG_FILE} oder in deiner Shell:
+- If you want a different download directory:
+  in ${LOCAL_CONFIG_FILE} or in your shell:
   export DOWNLOAD_DIR="\$HOME/Music/yt-audio"
-- Wenn terminal-notifier nicht automatisch gefunden wird:
-  in ${LOCAL_CONFIG_FILE} oder in deiner Shell:
+- If terminal-notifier is not detected automatically:
+  in ${LOCAL_CONFIG_FILE} or in your shell:
   export TERMINAL_NOTIFIER_BIN="\$(command -v terminal-notifier)"
 EOF
 }
@@ -119,10 +119,10 @@ EOF
 main() {
   cd "$SCRIPT_DIR"
 
-  require_command brew "Installiere Homebrew zuerst: https://brew.sh/"
+  require_command brew "Install Homebrew first: https://brew.sh/"
   require_command git
 
-  print_step "Installiere Abhaengigkeiten"
+  print_step "Installing dependencies"
   brew_install_if_missing yt-dlp
   brew_install_if_missing ffmpeg
   brew_install_if_missing opus-tools opusenc
