@@ -7,6 +7,7 @@ VENV_DIR="${VENV_DIR:-${SCRIPT_DIR}/.venv}"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 OPUS2TONIE_DIR="${OPUS2TONIE_DIR:-${SCRIPT_DIR}/opus2tonie}"
 OPUS2TONIE_REPO="${OPUS2TONIE_REPO:-https://github.com/bailli/opus2tonie.git}"
+LOCAL_CONFIG_FILE="${LOCAL_CONFIG_FILE:-${SCRIPT_DIR}/SetYourTeddycloudAddressHere.sh}"
 
 print_step() {
   printf '\n==> %s\n' "$1"
@@ -61,22 +62,56 @@ setup_opus2tonie() {
   git clone "$OPUS2TONIE_REPO" "$OPUS2TONIE_DIR"
 }
 
+write_local_config() {
+  local entered_url
+
+  print_step "Richte TeddyCloud-Konfiguration ein"
+
+  if [ -f "$LOCAL_CONFIG_FILE" ]; then
+    printf 'Bereits vorhanden: %s\n' "$LOCAL_CONFIG_FILE"
+    return
+  fi
+
+  printf 'Bitte gib deine TeddyCloud-URL ein (z. B. http://192.168.178.180/web): '
+  IFS= read -r entered_url
+  entered_url="${entered_url#"${entered_url%%[![:space:]]*}"}"
+  entered_url="${entered_url%"${entered_url##*[![:space:]]}"}"
+
+  if [ -z "$entered_url" ]; then
+    entered_url="http://SetYourTeddycloudAddressHere/web"
+  fi
+
+  cat > "$LOCAL_CONFIG_FILE" <<EOF
+#!/usr/bin/env bash
+
+# Local machine-specific configuration for this repository.
+# This file is intentionally not meant to be committed.
+
+export TEDDYCLOUD_URL="${entered_url}"
+EOF
+
+  chmod +x "$LOCAL_CONFIG_FILE"
+  printf 'Geschrieben: %s\n' "$LOCAL_CONFIG_FILE"
+}
+
 print_next_steps() {
   cat <<EOF
 
 Setup abgeschlossen.
 
 Naechste Schritte:
-1. TeddyCloud-URL setzen:
-   export TEDDYCLOUD_URL="http://DEIN-TEDDYCLOUD-HOST/web"
+1. Falls noetig, pruefe die Datei:
+   ${LOCAL_CONFIG_FILE}
 
 2. Script testen:
    ./download-audio.sh "https://youtube.com/watch?v=..."
 
 Optional:
 - Wenn du einen anderen Download-Ordner willst:
+  in ${LOCAL_CONFIG_FILE} oder in deiner Shell:
   export DOWNLOAD_DIR="\$HOME/Music/yt-audio"
 - Wenn terminal-notifier nicht automatisch gefunden wird:
+  in ${LOCAL_CONFIG_FILE} oder in deiner Shell:
   export TERMINAL_NOTIFIER_BIN="\$(command -v terminal-notifier)"
 EOF
 }
@@ -97,6 +132,7 @@ main() {
 
   setup_python_venv
   setup_opus2tonie
+  write_local_config
   print_next_steps
 }
 

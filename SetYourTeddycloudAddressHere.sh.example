@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# Copy or rename this file to:
+#   SetYourTeddycloudAddressHere.sh
+#
+# The real local file is ignored by Git and can contain your machine-specific settings.
+
+export TEDDYCLOUD_URL="http://SetYourTeddycloudAddressHere/web"
+
+# Optional local overrides:
+# export DOWNLOAD_DIR="$HOME/Music/yt-audio"
+# export TERMINAL_NOTIFIER_BIN="$(command -v terminal-notifier)"

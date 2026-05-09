@@ -33,6 +33,7 @@ chmod +x setup-macos.sh
 ```
 
 The setup script installs the required Homebrew packages, creates the local Python virtual environment, installs `protobuf<3.21`, and clones `opus2tonie` next to the project if needed.
+It also asks once for your TeddyCloud URL and writes a local config file named `SetYourTeddycloudAddressHere.sh`.
 
 ### Bootstrap install from GitHub
 
@@ -48,10 +49,17 @@ By default it clones into `./YT-to-TAF-to-Teddycloud`.
 
 ### Configuration
 
-The script uses environment variables instead of hardcoded personal settings:
+The script can load a local config file automatically:
 
 ```bash
-export TEDDYCLOUD_URL="http://YOUR-TEDDYCLOUD-HOST/web"
+SetYourTeddycloudAddressHere.sh
+```
+
+The recommended flow is to let `setup-macos.sh` create this file for you.
+An example template is included as:
+
+```bash
+SetYourTeddycloudAddressHere.sh.example
 ```
 
 Optional:
@@ -105,7 +113,6 @@ In the macOS Shortcuts app:
 5. script:
 
 ```zsh
-export TEDDYCLOUD_URL="http://YOUR-TEDDYCLOUD-HOST/web"
 /bin/bash "/ABSOLUTE/PATH/TO/download-audio.sh"
 ```
 
@@ -114,6 +121,7 @@ export TEDDYCLOUD_URL="http://YOUR-TEDDYCLOUD-HOST/web"
 - The repository expects `opus2tonie` as an external cloned directory next to the script and does not version it.
 - A local Python virtual environment is used on purpose so `protobuf<3.21` stays compatible with `opus2tonie`.
 - The current interaction flow is macOS-focused because dialogs and notifications use `osascript`.
+- The local file `SetYourTeddycloudAddressHere.sh` is machine-specific and intentionally ignored by Git.
 
 ---
 
@@ -150,6 +158,7 @@ chmod +x setup-macos.sh
 ```
 
 Das Setup-Script installiert die benoetigten Homebrew-Pakete, legt die lokale Python-Umgebung an, installiert `protobuf<3.21` und klont bei Bedarf `opus2tonie` neben das Projekt.
+Ausserdem fragt es einmal nach deiner TeddyCloud-URL und schreibt eine lokale Konfigurationsdatei mit dem Namen `SetYourTeddycloudAddressHere.sh`.
 
 ### Bootstrap-Installation direkt von GitHub
 
@@ -165,10 +174,17 @@ Standardmaessig wird dabei nach `./YT-to-TAF-to-Teddycloud` geklont.
 
 ### Konfiguration
 
-Das Script nutzt Umgebungsvariablen statt persoenlicher Hardcodings:
+Das Script kann automatisch eine lokale Konfigurationsdatei laden:
 
 ```bash
-export TEDDYCLOUD_URL="http://DEIN-TEDDYCLOUD-HOST/web"
+SetYourTeddycloudAddressHere.sh
+```
+
+Der empfohlene Weg ist, diese Datei von `setup-macos.sh` anlegen zu lassen.
+Eine Beispielvorlage liegt im Repo als:
+
+```bash
+SetYourTeddycloudAddressHere.sh.example
 ```
 
 Optional:
@@ -222,7 +238,6 @@ In der macOS-App `Kurzbefehle`:
 5. Script:
 
 ```zsh
-export TEDDYCLOUD_URL="http://DEIN-TEDDYCLOUD-HOST/web"
 /bin/bash "/ABSOLUTER/PFAD/ZU/download-audio.sh"
 ```
 
@@ -231,3 +246,4 @@ export TEDDYCLOUD_URL="http://DEIN-TEDDYCLOUD-HOST/web"
 - Das Repository erwartet `opus2tonie` als extern geklonten Ordner neben dem Script und versioniert ihn nicht mit.
 - Fuer die TAF-Erzeugung wird bewusst eine lokale Python-Umgebung verwendet, damit `protobuf<3.21` kompatibel zu `opus2tonie` bleibt.
 - Der aktuelle Interaktionsfluss ist macOS-fokussiert, weil Dialoge und Benachrichtigungen `osascript` verwenden.
+- Die lokale Datei `SetYourTeddycloudAddressHere.sh` ist rechnerbezogen und wird bewusst nicht mit Git versioniert.

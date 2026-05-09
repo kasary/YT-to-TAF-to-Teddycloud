@@ -3,6 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOCAL_CONFIG_FILE="${LOCAL_CONFIG_FILE:-${SCRIPT_DIR}/SetYourTeddycloudAddressHere.sh}"
 DOWNLOAD_DIR="${DOWNLOAD_DIR:-${HOME}/Music/yt-audio}"
 OPUS2TONIE_DIR="${OPUS2TONIE_DIR:-${SCRIPT_DIR}/opus2tonie}"
 PYTHON_BIN="${PYTHON_BIN:-${SCRIPT_DIR}/.venv/bin/python3}"
@@ -16,6 +17,11 @@ WORK_DIR=""
 DEFAULT_TITLE="Unbenannt"
 NOTIFICATION_TITLE="YT Audio Download"
 CURRENT_STEP=""
+
+if [ -f "$LOCAL_CONFIG_FILE" ]; then
+  # shellcheck disable=SC1090
+  . "$LOCAL_CONFIG_FILE"
+fi
 
 trim() {
   local value="$1"
@@ -35,6 +41,7 @@ Verwendung:
   $(basename "$0") <youtube-url>
 
 Konfiguration ueber Umgebungsvariablen:
+  LOCAL_CONFIG_FILE      lokale Konfigurationsdatei, Standard: ./SetYourTeddycloudAddressHere.sh
   TEDDYCLOUD_URL         z. B. http://192.168.178.180/web
   DOWNLOAD_DIR           lokaler Arbeitsordner fuer fertige .taf-Dateien
   KEEP_SOURCE_AUDIO      1 = .wav zusaetzlich behalten
