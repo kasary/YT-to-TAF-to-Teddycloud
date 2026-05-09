@@ -2,6 +2,11 @@
 
 ## English
 
+### Why this exists
+
+I built this because I was tired of how long it took to get a new audio file onto a Tonie.
+This script reduces the manual steps and moves the heavier conversion work onto my Mac instead of my homelab server, which gives me a much faster and more comfortable workflow.
+
 This repository contains a macOS-focused script that:
 
 1. accepts a YouTube URL
@@ -13,6 +18,18 @@ This repository contains a macOS-focused script that:
 7. uploads the file to TeddyCloud
 8. assigns the uploaded file to the selected Tonie/tag
 9. removes the local `.taf` again after a successful upload
+
+### Quick install
+
+If you want a single script that clones this repository first and then runs the local setup:
+
+```bash
+curl -LO https://raw.githubusercontent.com/kasary/YT-to-TAF-to-Teddycloud/main/install-from-github-macos.sh
+chmod +x install-from-github-macos.sh
+./install-from-github-macos.sh
+```
+
+By default it clones into `./YT-to-TAF-to-Teddycloud`.
 
 ### Requirements
 
@@ -34,18 +51,6 @@ chmod +x setup-macos.sh
 
 The setup script installs the required Homebrew packages, creates the local Python virtual environment, installs `protobuf<3.21`, and clones `opus2tonie` next to the project if needed.
 It also asks once for your TeddyCloud URL and writes a local config file named `SetYourTeddycloudAddressHere.sh`.
-
-### Bootstrap install from GitHub
-
-If you want a single script that clones this repository first and then runs the local setup:
-
-```bash
-curl -LO https://raw.githubusercontent.com/kasary/YT-to-TAF-to-Teddycloud/main/install-from-github-macos.sh
-chmod +x install-from-github-macos.sh
-./install-from-github-macos.sh
-```
-
-By default it clones into `./YT-to-TAF-to-Teddycloud`.
 
 ### Configuration
 
@@ -116,6 +121,14 @@ In the macOS Shortcuts app:
 /bin/bash "/ABSOLUTE/PATH/TO/download-audio.sh"
 ```
 
+An exported example shortcut is included in this repository:
+
+```text
+YT-Teddy.shortcut
+```
+
+After importing it, you may need to adjust the local script path once on your machine.
+
 ### Notes
 
 - The repository expects `opus2tonie` as an external cloned directory next to the script and does not version it.
@@ -126,6 +139,11 @@ In the macOS Shortcuts app:
 ---
 
 ## Deutsch
+
+### Warum es dieses Projekt gibt
+
+Ich habe das gebaut, weil mich genervt hat, wie lange es dauert, eine neue Audiodatei auf einen Tonie zu bekommen.
+Das Script nimmt mir viele manuelle Schritte ab und verlagert die aufwaendige Konvertierung auf meinen Mac statt auf meinen Homelab-Server, was den ganzen Ablauf in meinem Fall deutlich schneller und angenehmer macht.
 
 Dieses Repository enthaelt ein macOS-fokussiertes Script, das:
 
@@ -138,6 +156,18 @@ Dieses Repository enthaelt ein macOS-fokussiertes Script, das:
 7. die Datei zu TeddyCloud hochlaedt
 8. die hochgeladene Datei dem ausgewaehlten Tonie/Tag zuweist
 9. die lokale `.taf` nach erfolgreichem Upload wieder entfernt
+
+### Quick-Install
+
+Wenn du lieber ein einzelnes Script verwenden willst, das zuerst dieses Repository klont und danach direkt das lokale Setup startet:
+
+```bash
+curl -LO https://raw.githubusercontent.com/kasary/YT-to-TAF-to-Teddycloud/main/install-from-github-macos.sh
+chmod +x install-from-github-macos.sh
+./install-from-github-macos.sh
+```
+
+Standardmaessig wird dabei nach `./YT-to-TAF-to-Teddycloud` geklont.
 
 ### Voraussetzungen
 
@@ -159,18 +189,6 @@ chmod +x setup-macos.sh
 
 Das Setup-Script installiert die benoetigten Homebrew-Pakete, legt die lokale Python-Umgebung an, installiert `protobuf<3.21` und klont bei Bedarf `opus2tonie` neben das Projekt.
 Ausserdem fragt es einmal nach deiner TeddyCloud-URL und schreibt eine lokale Konfigurationsdatei mit dem Namen `SetYourTeddycloudAddressHere.sh`.
-
-### Bootstrap-Installation direkt von GitHub
-
-Wenn du lieber ein einzelnes Script verwenden willst, das zuerst dieses Repository klont und danach direkt das lokale Setup startet:
-
-```bash
-curl -LO https://raw.githubusercontent.com/kasary/YT-to-TAF-to-Teddycloud/main/install-from-github-macos.sh
-chmod +x install-from-github-macos.sh
-./install-from-github-macos.sh
-```
-
-Standardmaessig wird dabei nach `./YT-to-TAF-to-Teddycloud` geklont.
 
 ### Konfiguration
 
@@ -240,6 +258,14 @@ In der macOS-App `Kurzbefehle`:
 ```zsh
 /bin/bash "/ABSOLUTER/PFAD/ZU/download-audio.sh"
 ```
+
+Ein exportierter Beispiel-Kurzbefehl liegt bereits in diesem Repository:
+
+```text
+YT-Teddy.shortcut
+```
+
+Nach dem Import muss auf einem anderen Rechner in der Regel einmal der lokale Script-Pfad angepasst werden.
 
 ### Hinweise
 
